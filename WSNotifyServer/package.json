@@ -1,0 +1,32 @@
+{
+  "name": "wsnotify-server",
+  "version": "1.0.0",
+  "description": "WebSocket сервер для WSNotify компонента MODX",
+  "main": "wsnotifyserver.js",
+  "scripts": {
+    "start": "node wsnotifyserver.js",
+    "dev": "nodemon wsnotifyserver.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "websocket",
+    "modx",
+    "notifications",
+    "realtime"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "socket.io": "^4.7.5",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

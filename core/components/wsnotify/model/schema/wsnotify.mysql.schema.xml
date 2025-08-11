@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model package="wsnotify" baseClass="xPDOObject" platform="mysql" defaultEngine="InnoDB" phpwsnotify-package="wsnotify"
+       version="1.1">
+    
+    <!-- Таблица каналов уведомлений -->
+    <object class="WSNotifyChannel" table="wsnotify_channels" extends="xPDOSimpleObject">
+        <field key="name" dbtype="varchar" precision="255" phptype="string" null="false" default=""/>
+        <field key="description" dbtype="text" phptype="string" null="true" default=""/>
+        <field key="active" dbtype="tinyint" precision="1" attributes="unsigned" phptype="boolean" null="false" default="1"/>
+        <field key="default" dbtype="tinyint" precision="1" attributes="unsigned" phptype="boolean" null="false" default="0"/>
+        <field key="created_at" dbtype="timestamp" phptype="timestamp" null="false" default="CURRENT_TIMESTAMP"/>
+        <field key="updated_at" dbtype="timestamp" phptype="timestamp" null="false" default="CURRENT_TIMESTAMP" extra="ON UPDATE CURRENT_TIMESTAMP"/>
+
+        <index alias="name" name="name" primary="false" unique="true" type="BTREE">
+            <column key="name" length="" collation="A" null="false"/>
+        </index>
+        <index alias="active" name="active" primary="false" unique="false" type="BTREE">
+            <column key="active" length="" collation="A" null="false"/>
+        </index>
+        <index alias="default" name="default" primary="false" unique="false" type="BTREE">
+            <column key="default" length="" collation="A" null="false"/>
+        </index>
+    </object>
+
+    <!-- Таблица подписок пользователей на каналы -->
+    <object class="WSNotifySubscription" table="wsnotify_subscriptions" extends="xPDOSimpleObject">
+        <field key="channel_id" dbtype="int" precision="10" attributes="unsigned" phptype="integer" null="false"/>
+        <field key="user_id" dbtype="int" precision="10" attributes="unsigned" phptype="integer" null="true"/>
+        <field key="user_group" dbtype="varchar" precision="255" phptype="string" null="true" default=""/>
+        <field key="active" dbtype="tinyint" precision="1" attributes="unsigned" phptype="boolean" null="false" default="1"/>
+        <field key="created_at" dbtype="timestamp" phptype="timestamp" null="false" default="CURRENT_TIMESTAMP"/>
+
+        <index alias="channel_id" name="channel_id" primary="false" unique="false" type="BTREE">
+            <column key="channel_id" length="" collation="A" null="false"/>
+        </index>
+        <index alias="user_id" name="user_id" primary="false" unique="false" type="BTREE">
+            <column key="user_id" length="" collation="A" null="false"/>
+        </index>
+        <index alias="user_group" name="user_group" primary="false" unique="false" type="BTREE">
+            <column key="user_group" length="" collation="A" null="false"/>
+        </index>
+        <index alias="active" name="active" primary="false" unique="false" type="BTREE">
+            <column key="active" length="" collation="A" null="false"/>
+        </index>
+
+        <aggregate alias="Channel" class="WSNotifyChannel" local="channel_id" foreign="id" cardinality="one" owner="foreign"/>
+    </object>
+
+</model>

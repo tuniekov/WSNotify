@@ -1,0 +1,22 @@
+{
+  "sites": {
+    "modx_local": {
+      "name": "Default MODX Site",
+      "url": "http://modx.local",
+      "api_key": "CnGWlhXAyLWDLcUkQNRDKX5FazBaJ6ZvBB3V7PO",
+      "enabled": true,
+      "channels": []
+    }
+  },
+  "server": {
+    "port": 3100,
+    "cors": {
+      "enabled": true,
+      "origins": ["*"]
+    },
+    "logging": {
+      "level": "info",
+      "file": "logs/wsnotify.log"
+    }
+  }
+}

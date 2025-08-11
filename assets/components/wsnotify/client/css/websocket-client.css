@@ -1,0 +1,347 @@
+/**
+ * WSNotify WebSocket Client Styles
+ * Стили для уведомлений WebSocket клиента
+ */
+
+/* Контейнер для уведомлений */
+.wsnotify-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    max-width: 400px;
+    pointer-events: none;
+}
+
+/* Отдельное уведомление */
+.wsnotify-notification {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-bottom: 10px;
+    padding: 16px;
+    position: relative;
+    pointer-events: auto;
+    transform: translateX(100%);
+    transition: all 0.3s ease-in-out;
+    border-left: 4px solid #007bff;
+    max-width: 100%;
+    word-wrap: break-word;
+}
+
+/* Анимация появления */
+.wsnotify-notification.show {
+    transform: translateX(0);
+}
+
+/* Анимация исчезновения */
+.wsnotify-notification.hide {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+/* Типы уведомлений */
+.wsnotify-notification.success {
+    border-left-color: #28a745;
+}
+
+.wsnotify-notification.error {
+    border-left-color: #dc3545;
+}
+
+.wsnotify-notification.warning {
+    border-left-color: #ffc107;
+}
+
+.wsnotify-notification.info {
+    border-left-color: #17a2b8;
+}
+
+.wsnotify-notification.alert {
+    border-left-color: #fd7e14;
+}
+
+/* Заголовок уведомления */
+.wsnotify-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin: 0 0 8px 0;
+    color: #333;
+    line-height: 1.4;
+}
+
+/* Текст уведомления */
+.wsnotify-message {
+    font-size: 13px;
+    color: #666;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Кнопка закрытия */
+.wsnotify-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #999;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.wsnotify-close:hover {
+    background: #f5f5f5;
+    color: #333;
+}
+
+/* Иконки для типов уведомлений */
+.wsnotify-notification::before {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    vertical-align: top;
+    margin-top: 1px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    flex-shrink: 0;
+}
+
+.wsnotify-notification.success::before {
+    content: '✓';
+    color: #28a745;
+    font-weight: bold;
+    background: none;
+    width: auto;
+    height: auto;
+}
+
+.wsnotify-notification.error::before {
+    content: '✕';
+    color: #dc3545;
+    font-weight: bold;
+    background: none;
+    width: auto;
+    height: auto;
+}
+
+.wsnotify-notification.warning::before {
+    content: '⚠';
+    color: #ffc107;
+    font-weight: bold;
+    background: none;
+    width: auto;
+    height: auto;
+}
+
+.wsnotify-notification.info::before {
+    content: 'ℹ';
+    color: #17a2b8;
+    font-weight: bold;
+    background: none;
+    width: auto;
+    height: auto;
+}
+
+.wsnotify-notification.alert::before {
+    content: '!';
+    color: #fd7e14;
+    font-weight: bold;
+    background: none;
+    width: auto;
+    height: auto;
+}
+
+/* Контент уведомления */
+.wsnotify-content {
+    display: flex;
+    align-items: flex-start;
+    padding-right: 20px;
+}
+
+.wsnotify-text {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Прогресс-бар для уведомлений с таймером */
+.wsnotify-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+}
+
+.wsnotify-progress-bar {
+    height: 100%;
+    background: currentColor;
+    transition: width linear;
+    opacity: 0.3;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 480px) {
+    .wsnotify-container {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+    
+    .wsnotify-notification {
+        margin-bottom: 8px;
+        padding: 12px;
+    }
+    
+    .wsnotify-title {
+        font-size: 13px;
+    }
+    
+    .wsnotify-message {
+        font-size: 12px;
+    }
+}
+
+/* Темная тема */
+@media (prefers-color-scheme: dark) {
+    .wsnotify-notification {
+        background: #2d3748;
+        color: #e2e8f0;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .wsnotify-title {
+        color: #f7fafc;
+    }
+    
+    .wsnotify-message {
+        color: #cbd5e0;
+    }
+    
+    .wsnotify-close {
+        color: #a0aec0;
+    }
+    
+    .wsnotify-close:hover {
+        background: #4a5568;
+        color: #f7fafc;
+    }
+}
+
+/* Анимация пульсации для важных уведомлений */
+.wsnotify-notification.pulse {
+    animation: wsnotify-pulse 2s infinite;
+}
+
+@keyframes wsnotify-pulse {
+    0% {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    50% {
+        box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3);
+    }
+    100% {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+}
+
+/* Состояние подключения */
+.wsnotify-connection-status {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #fff;
+    border-radius: 20px;
+    padding: 8px 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-size: 12px;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    gap: 8px;
+}
+
+.wsnotify-connection-status.show {
+    display: flex;
+}
+
+.wsnotify-connection-status.connected {
+    color: #28a745;
+}
+
+.wsnotify-connection-status.disconnected {
+    color: #dc3545;
+}
+
+.wsnotify-connection-status.connecting {
+    color: #ffc107;
+}
+
+.wsnotify-connection-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.wsnotify-connection-status.connecting .wsnotify-connection-indicator {
+    animation: wsnotify-blink 1s infinite;
+}
+
+@keyframes wsnotify-blink {
+    0%, 50% {
+        opacity: 1;
+    }
+    51%, 100% {
+        opacity: 0.3;
+    }
+}
+
+/* Группировка уведомлений */
+.wsnotify-group {
+    margin-bottom: 16px;
+}
+
+.wsnotify-group-header {
+    font-size: 11px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    padding: 0 4px;
+}
+
+/* Компактный режим */
+.wsnotify-container.compact .wsnotify-notification {
+    padding: 12px;
+    margin-bottom: 6px;
+}
+
+.wsnotify-container.compact .wsnotify-title {
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.wsnotify-container.compact .wsnotify-message {
+    font-size: 12px;
+}
+
+/* Скрытие контейнера когда нет уведомлений */
+.wsnotify-container:empty {
+    display: none;
+}
