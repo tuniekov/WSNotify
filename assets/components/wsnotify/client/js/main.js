@@ -93,7 +93,7 @@ const WSNotifyHelpers = {
         // Обработка превышения лимита переподключений
         wsnotifyClient.on('max_reconnect_attempts', () => {
             console.error('[WSNotify] Превышено максимальное количество попыток переподключения');
-            this.showMessage('Потеряно соединение с сервером уведомлений', 'error');
+            // this.showMessage('Потеряно соединение с сервером уведомлений', 'error');
         });
     },
 
