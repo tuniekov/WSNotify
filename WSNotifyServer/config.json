@@ -10,6 +10,7 @@
   },
   "server": {
     "port": 3100,
+    "host": "0.0.0.0",
     "cors": {
       "enabled": true,
       "origins": ["*"]

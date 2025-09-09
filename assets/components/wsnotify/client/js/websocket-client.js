@@ -57,7 +57,8 @@ class WSNotifyClient {
         try {
             // Проверяем доступность Socket.IO
             if (typeof io === 'undefined') {
-                this.error('Socket.IO библиотека не загружена');
+                this.error('Socket.IO библиотека не загружена. Проверьте доступность WebSocket сервера по адресу: ' + this.options.url);
+                this.trigger('library_not_loaded');
                 return;
             }
             

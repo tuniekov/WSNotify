@@ -322,8 +322,10 @@ app.get('/', (req, res) => {
 
 // Запуск сервера
 const PORT = config.server?.port || 3100;
-server.listen(PORT, () => {
-    console.log(`WSNotify сервер запущен на порту ${PORT}`);
+const HOST = config.server?.host || '0.0.0.0'; // Слушаем на всех интерфейсах
+
+server.listen(PORT, HOST, () => {
+    console.log(`WSNotify сервер запущен на ${HOST}:${PORT}`);
     console.log(`Настроенные сайты: ${Object.keys(config.sites).join(', ')}`);
 });
 

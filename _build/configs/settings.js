@@ -1,7 +1,7 @@
 export default [
     {
         key: 'wsnotify_websocket_url',
-        value: 'http://localhost:3100',
+        value: 'http://modx.local:3100',
         type: 'textfield',
         area: 'websocket',
         description: 'URL WebSocket сервера'
