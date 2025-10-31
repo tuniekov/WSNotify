@@ -94,7 +94,7 @@ Object.keys(config.sites).forEach(siteKey => {
                         user: authResult.user
                     });
                     
-                    console.log(`Пользователь ${authResult.user.id} аутентифицирован на сайте ${siteKey}`);
+                    console.log(`Пользователь ${authResult.user.id} аутентифицирован на сайте ${siteKey}`,data.channels);
                 } else {
                     socket.emit('auth_error', {
                         success: false,

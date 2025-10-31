@@ -101,11 +101,16 @@ $wsnotify->sendToAnonymous([
 
 ```javascript
 // Обработка конкретного события
-WSNotifyHelpers.on('new_message', function(data) {
+const result = WSNotifyHelpers.on('new_message', function(data) {
     console.log('Новое сообщение:', data.message);
     // Показать уведомление
     alert(data.message);
 });
+
+// Проверка успешности регистрации
+if (!result.success) {
+    console.error('Ошибка регистрации обработчика:', result.error);
+}
 
 // Обработка прогресса задачи
 WSNotifyHelpers.on('task_progress', function(data) {
@@ -197,20 +202,251 @@ $wsnotify->sendToGroups(['Moderator'], [
 ]);
 ```
 
-## Создание каналов программно
+## Прямая отправка уведомлений (без каналов)
+
+Методы `sendToUsers`, `sendToGroups`, `sendToAnonymous` и `sendToAll` работают напрямую с WebSocket сервером и не требуют предварительного создания каналов.
+
+### Отправка конкретным пользователям
 
 ```php
 <?php
 $wsnotify = $modx->getService('wsnotify', 'WSNotify', MODX_CORE_PATH . 'components/wsnotify/model/');
 
-// Создать новый канал
-$result = $wsnotify->createChannel('notifications', 'Общие уведомления');
-if ($result['success']) {
-    echo 'Канал создан: ' . $result['data']['name'];
-}
+// Простое уведомление пользователям
+$wsnotify->sendToUsers([1, 5, 10], [
+    'type' => 'notification',
+    'event' => 'direct_notification',
+    'message' => 'Это прямое уведомление без использования каналов'
+]);
+
+// Уведомление с дополнительными данными
+$wsnotify->sendToUsers([123], [
+    'type' => 'success',
+    'event' => 'payment_received',
+    'message' => 'Платеж успешно получен',
+    'data' => [
+        'amount' => 1500,
+        'order_id' => 456,
+        'timestamp' => time()
+    ]
+]);
+
+// Критическое уведомление
+$wsnotify->sendToUsers([$modx->user->id], [
+    'type' => 'error',
+    'event' => 'account_security',
+    'message' => 'Обнаружена подозрительная активность',
+    'data' => [
+        'ip' => $_SERVER['REMOTE_ADDR'],
+        'action' => 'login_attempt'
+    ],
+    'duration' => 10000 // Показывать 10 секунд
+]);
+```
+
+### Отправка группам пользователей
+
+```php
+<?php
+// Уведомление администраторам
+$wsnotify->sendToGroups(['Administrator'], [
+    'type' => 'alert',
+    'event' => 'system_alert',
+    'message' => 'Требуется внимание администратора',
+    'data' => [
+        'severity' => 'high',
+        'module' => 'security'
+    ]
+]);
+
+// Уведомление нескольким группам
+$wsnotify->sendToGroups(['Administrator', 'Manager', 'Editor'], [
+    'type' => 'info',
+    'event' => 'system_update',
+    'message' => 'Запланировано обновление системы',
+    'data' => [
+        'scheduled_time' => '2024-12-01 02:00:00',
+        'duration' => '30 минут'
+    ]
+]);
+```
+
+### Отправка анонимным пользователям
+
+```php
+<?php
+// Уведомление всем неавторизованным посетителям
+$wsnotify->sendToAnonymous([
+    'type' => 'info',
+    'event' => 'promo_announcement',
+    'message' => 'Специальное предложение для новых пользователей!',
+    'data' => [
+        'discount' => 20,
+        'promo_code' => 'WELCOME20'
+    ]
+]);
+
+// Техническое уведомление
+$wsnotify->sendToAnonymous([
+    'type' => 'warning',
+    'event' => 'maintenance_warning',
+    'message' => 'Сайт будет недоступен с 02:00 до 03:00',
+    'duration' => 15000
+]);
+```
+
+### Отправка всем пользователям
+
+```php
+<?php
+// Глобальное объявление для всех (авторизованных и анонимных)
+$wsnotify->sendToAll([
+    'type' => 'warning',
+    'event' => 'global_announcement',
+    'message' => 'Важное объявление: изменение условий использования',
+    'data' => [
+        'effective_date' => '2024-12-01',
+        'details_url' => '/terms'
+    ],
+    'duration' => 20000
+]);
+
+// Экстренное уведомление
+$wsnotify->sendToAll([
+    'type' => 'error',
+    'event' => 'emergency',
+    'message' => 'Экстренное техническое обслуживание через 5 минут',
+    'data' => [
+        'estimated_duration' => '15 минут'
+    ]
+]);
+```
+
+## Создание и использование каналов
+
+### Создание каналов программно
+
+```php
+<?php
+$wsnotify = $modx->getService('wsnotify', 'WSNotify', MODX_CORE_PATH . 'components/wsnotify/model/');
+
+// Создать канал новостей
+$channel = $modx->newObject('WSNotifyChannel');
+$channel->set('name', 'news');
+$channel->set('description', 'Канал новостей и обновлений');
+$channel->set('active', 1);
+$channel->set('default', 1); // Автоматически подключается для всех
+$channel->save();
+
+// Создать канал для VIP пользователей
+$vipChannel = $modx->newObject('WSNotifyChannel');
+$vipChannel->set('name', 'vip_offers');
+$vipChannel->set('description', 'Эксклюзивные предложения для VIP');
+$vipChannel->set('active', 1);
+$vipChannel->set('default', 0); // Требует ручной подписки
+$vipChannel->save();
 
 // Синхронизировать каналы с WebSocket сервером
 $wsnotify->syncChannelsToWebSocket();
+```
+
+### Создание каналов через админку
+
+1. Откройте админку MODX
+2. Перейдите в раздел **WSNotify > Каналы** (таб WSNotifyChannel)
+3. Нажмите "Создать"
+4. Заполните поля:
+   - **Название канала**: `alerts`
+   - **Описание**: `Важные уведомления и предупреждения`
+   - **Активен**: ✓
+   - **Канал по умолчанию**: ✓
+5. Сохраните
+6. Нажмите кнопку **"Синхронизировать с WebSocket"**
+
+### Отправка в каналы
+
+```php
+<?php
+// ВАЖНО: Канал должен быть создан перед отправкой!
+
+// Отправка в канал новостей
+$wsnotify->sendToChannels(['news'], [
+    'type' => 'notification',
+    'event' => 'news_published',
+    'message' => 'Опубликована новая статья',
+    'data' => [
+        'article_id' => 123,
+        'title' => 'Заголовок статьи',
+        'url' => '/news/article-123'
+    ]
+]);
+
+// Отправка в несколько каналов
+$wsnotify->sendToChannels(['news', 'alerts'], [
+    'type' => 'alert',
+    'event' => 'important_update',
+    'message' => 'Важное обновление системы',
+    'data' => [
+        'version' => '2.0.0',
+        'changes' => ['Новая функция', 'Исправления']
+    ]
+]);
+```
+
+## Когда использовать каналы vs прямую отправку
+
+### Используйте КАНАЛЫ когда:
+
+```php
+<?php
+// Пример: Система подписок на новости
+// Пользователи могут подписаться/отписаться от категорий новостей
+
+// Создаем каналы для категорий
+$categories = ['tech', 'business', 'sports', 'entertainment'];
+foreach ($categories as $cat) {
+    $channel = $modx->newObject('WSNotifyChannel');
+    $channel->set('name', 'news_' . $cat);
+    $channel->set('description', 'Новости: ' . $cat);
+    $channel->set('active', 1);
+    $channel->set('default', 0); // Пользователь выбирает сам
+    $channel->save();
+}
+
+// Отправка новости в конкретную категорию
+$wsnotify->sendToChannels(['news_tech'], [
+    'type' => 'notification',
+    'event' => 'new_article',
+    'message' => 'Новая статья в категории Технологии'
+]);
+```
+
+### Используйте ПРЯМУЮ ОТПРАВКУ когда:
+
+```php
+<?php
+// Пример: Системные уведомления и персональные сообщения
+
+// Уведомление о завершении задачи конкретному пользователю
+$wsnotify->sendToUsers([$userId], [
+    'type' => 'success',
+    'event' => 'task_completed',
+    'message' => 'Ваша задача выполнена'
+]);
+
+// Критическое уведомление администраторам
+$wsnotify->sendToGroups(['Administrator'], [
+    'type' => 'error',
+    'event' => 'critical_error',
+    'message' => 'Критическая ошибка в системе'
+]);
+
+// Объявление для всех посетителей
+$wsnotify->sendToAll([
+    'type' => 'info',
+    'event' => 'announcement',
+    'message' => 'Сайт работает в тестовом режиме'
+]);
 ```
 
 ## Обработка ошибок

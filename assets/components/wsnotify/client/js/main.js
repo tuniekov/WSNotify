@@ -250,8 +250,10 @@ const WSNotifyHelpers = {
     on: function(event, handler) {
         if (wsnotifyClient) {
             wsnotifyClient.on(event, handler);
+            return { success: true };
         } else {
             console.warn('[WSNotify] Клиент не инициализирован');
+            return { success: false, error: 'Клиент не инициализирован' };
         }
     },
 

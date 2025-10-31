@@ -136,7 +136,7 @@ WSNotify/
 
 ## Методы отправки уведомлений
 
-### PHP методы
+### PHP методы высокого уровня
 
 ```php
 // Конкретным пользователям
@@ -145,20 +145,81 @@ $wsnotify->sendToUsers(array $userIds, array $data);
 // Группам пользователей  
 $wsnotify->sendToGroups(array $groupNames, array $data);
 
-// В каналы
+// В каналы (требуется предварительное создание канала)
 $wsnotify->sendToChannels(array $channels, array $data);
 
 // Анонимным пользователям
 $wsnotify->sendToAnonymous(array $data);
+
+// Всем пользователям (авторизованным и анонимным)
+$wsnotify->sendToAll(array $data);
 ```
+
+### Прямая отправка через sendToWebSocket (без каналов)
+
+Для отправки уведомлений без необходимости создания каналов можно использовать методы `sendToUsers`, `sendToGroups`, `sendToAnonymous` или `sendToAll`. Эти методы работают напрямую с WebSocket сервером и не требуют предварительной настройки каналов.
+
+```php
+<?php
+$wsnotify = $modx->getService('wsnotify', 'WSNotify', MODX_CORE_PATH . 'components/wsnotify/model/');
+
+// Отправка конкретным пользователям (без канала)
+$wsnotify->sendToUsers([1, 2, 3], [
+    'type' => 'notification',
+    'event' => 'direct_message',
+    'message' => 'Прямое уведомление пользователям',
+    'data' => [
+        'priority' => 'high',
+        'action_url' => '/profile'
+    ]
+]);
+
+// Отправка группам (без канала)
+$wsnotify->sendToGroups(['Administrator', 'Manager'], [
+    'type' => 'alert',
+    'event' => 'system_warning',
+    'message' => 'Системное предупреждение для администраторов'
+]);
+
+// Отправка всем анонимным пользователям (без канала)
+$wsnotify->sendToAnonymous([
+    'type' => 'info',
+    'event' => 'maintenance',
+    'message' => 'Плановые технические работы через 10 минут'
+]);
+
+// Отправка всем пользователям сайта (без канала)
+$wsnotify->sendToAll([
+    'type' => 'warning',
+    'event' => 'global_announcement',
+    'message' => 'Важное объявление для всех пользователей'
+]);
+```
+
+**Когда использовать каналы, а когда прямую отправку:**
+
+- **Используйте каналы** (`sendToChannels`) когда:
+  - Нужна организованная структура уведомлений
+  - Пользователи должны подписываться/отписываться от определенных типов уведомлений
+  - Требуется управление подписками через интерфейс
+
+- **Используйте прямую отправку** (`sendToUsers`, `sendToGroups`, `sendToAnonymous`, `sendToAll`) когда:
+  - Нужно быстро отправить уведомление без настройки каналов
+  - Уведомление разовое или системное
+  - Получатели определяются программно (по ID, группам)
 
 ### JavaScript обработчики
 
 ```javascript
 // Регистрация обработчика события
-WSNotifyHelpers.on('new_message', function(data) {
+const result = WSNotifyHelpers.on('new_message', function(data) {
     console.log('Новое сообщение:', data.message);
 });
+
+// Проверка успешности регистрации
+if (!result.success) {
+    console.error('Ошибка регистрации обработчика:', result.error);
+}
 
 // Показ уведомления
 WSNotifyHelpers.showMessage('Тестовое уведомление', 'info');
@@ -171,12 +232,115 @@ if (WSNotifyHelpers.isConnected()) {
 
 ## Управление каналами
 
-Каналы управляются через административный интерфейс gtsapipackages:
+### Создание каналов
+
+Перед отправкой уведомлений в каналы необходимо создать эти каналы в базе данных.
+
+**Через административный интерфейс:**
 
 1. Перейдите в админку MODX
-2. Найдите раздел **WSNotify > Каналы**
-3. Создавайте и редактируйте каналы
-4. Используйте кнопку **"Синхронизировать с WebSocket"** для обновления сервера
+2. Найдите раздел **WSNotify > Каналы** (вкладка WSNotifyChannel)
+3. Нажмите "Создать" и заполните поля:
+   - **Название канала** - уникальное имя канала (например: `news`, `alerts`)
+   - **Описание** - описание назначения канала
+   - **Активен** - включить/выключить канал
+   - **Канал по умолчанию** - автоматически подключать для всех пользователей
+4. Сохраните канал
+5. Нажмите кнопку **"Синхронизировать с WebSocket"** для обновления сервера
+
+**Программное создание канала:**
+
+```php
+<?php
+// Создание канала через базу данных
+$channel = $modx->newObject('WSNotifyChannel');
+$channel->set('name', 'news');
+$channel->set('description', 'Канал новостей');
+$channel->set('active', 1);
+$channel->set('default', 1); // Канал по умолчанию
+$channel->save();
+
+// Синхронизация с WebSocket сервером
+$wsnotify = $modx->getService('wsnotify', 'WSNotify', MODX_CORE_PATH . 'components/wsnotify/model/');
+$wsnotify->syncChannelsToWebSocket();
+```
+
+### Редактор каналов с табами
+
+Компонент предоставляет удобный интерфейс управления каналами через два таба.
+
+#### Создание страницы управления
+
+Для создания страницы управления каналами в админке MODX:
+
+1. Создайте новый ресурс в админке MODX
+2. Установите шаблон с поддержкой FENOM
+3. Поместите в содержимое ресурса следующий код:
+
+```fenom
+{'!PVTabs' | snippet : [
+    'tabs' => [
+        'WSNotifyChannel' => [
+            'title' => 'Управление каналами',
+            'table' => 'WSNotifyChannel',
+        ],
+        'WSNotifySubscription' => [
+            'title' => 'Управление подписками',
+            'table' => 'WSNotifySubscription',
+        ]
+    ]
+]}
+```
+
+4. Сохраните ресурс
+5. Откройте страницу - вы увидите интерфейс с двумя вкладками
+
+#### Возможности редактора
+
+**Вкладка "Управление каналами" (WSNotifyChannel):**
+- ✅ Создание и редактирование каналов
+- ✅ Настройка каналов по умолчанию
+- ✅ Активация/деактивация каналов
+- ✅ Кнопка "Синхронизировать с WebSocket" для обновления сервера
+
+**Вкладка "Управление подписками" (WSNotifySubscription):**
+- ✅ Просмотр подписок пользователей на каналы
+- ✅ Создание пользовательских подписок
+- ✅ Управление групповыми подписками
+- ✅ Активация/деактивация подписок
+
+#### Альтернативный вариант (без FENOM)
+
+Если вы не используете FENOM, используйте стандартный синтаксис сниппета:
+
+```
+[[!PVTabs?
+    &tabs=`{
+        "WSNotifyChannel": {
+            "title": "Управление каналами",
+            "table": "WSNotifyChannel"
+        },
+        "WSNotifySubscription": {
+            "title": "Управление подписками",
+            "table": "WSNotifySubscription"
+        }
+    }`
+]]
+```
+
+### Отправка в каналы
+
+```php
+<?php
+$wsnotify = $modx->getService('wsnotify', 'WSNotify', MODX_CORE_PATH . 'components/wsnotify/model/');
+
+// ВАЖНО: Канал должен быть создан перед отправкой!
+$wsnotify->sendToChannels(['news'], [
+    'type' => 'notification',
+    'event' => 'news_update',
+    'message' => 'Новая статья опубликована'
+]);
+```
 
 ## Требования
 

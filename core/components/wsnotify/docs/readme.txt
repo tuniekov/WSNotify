@@ -54,9 +54,14 @@ wsnotify_enabled - Включить WebSocket уведомления (по ум�
 3. Обработка уведомлений в JavaScript:
 
    // Регистрация обработчика
-   WSNotifyHelpers.on('new_message', function(data) {
+   const result = WSNotifyHelpers.on('new_message', function(data) {
        console.log('Новое сообщение:', data.message);
    });
+
+   // Проверка успешности регистрации
+   if (!result.success) {
+       console.error('Ошибка регистрации обработчика:', result.error);
+   }
 
    // Показ простого уведомления
    WSNotifyHelpers.showMessage('Тестовое уведомление', 'info');
